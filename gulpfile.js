@@ -13,13 +13,13 @@ var BUILD = process.env.PARSE_BUILD || 'browser';
 var VERSION = require('./package.json').version;
 
 var PRESETS = {
-  'browser': ['es2015', 'react', 'stage-2'],
-  'node': ['es2015', 'react', 'stage-2'],
+  // 'browser': ['es2015', 'react', 'stage-2'],
+  // 'node': ['es2015', 'react', 'stage-2'],
   'react-native': ['react'],
 };
 var PLUGINS = {
-  'browser': ['inline-package-json', 'transform-inline-environment-variables', 'transform-runtime'],
-  'node': ['inline-package-json', 'transform-inline-environment-variables', 'transform-runtime'],
+  // 'browser': ['inline-package-json', 'transform-inline-environment-variables', 'transform-runtime'],
+  // 'node': ['inline-package-json', 'transform-inline-environment-variables', 'transform-runtime'],
   'react-native': ['inline-package-json', 'transform-inline-environment-variables'],
 };
 
@@ -62,6 +62,22 @@ gulp.task('compile', function() {
     }))
     .pipe(gulp.dest(path.join('lib', BUILD)));
 });
+
+gulp.task('react', function() {
+  var stream = browserify({
+    builtins: ['_process', 'events'],
+    entries: 'lib/react-native/Parse.js',
+    standalone: 'Parse'
+  })
+  .exclude('xmlhttprequest')
+  .ignore('_process')
+  .bundle();
+
+  return stream.pipe(source('parse.js'))
+    .pipe(derequire())
+    .pipe(insert.prepend(DEV_HEADER))
+    .pipe(gulp.dest('./dist'));
+})
 
 gulp.task('browserify', function() {
   var stream = browserify({
